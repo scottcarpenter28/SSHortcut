@@ -1,0 +1,4 @@
+*.pyc
+.idea
+venv
+/src/sshortcut.egg-info

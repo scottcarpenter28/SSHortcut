@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sshortcut"
+version = "0.0.1"
+dependencies = [
+    "textual ~= 0.80",
+    "sqlalchemy ~= 2.0",
+]
+requires-python = ">=3.10"
+authors = [
+    {name = "Scott Carpenter", email = "scottcarpenter28@gmail.com"},
+]
+maintainers = [
+    {name = "Scott Carpenter", email = "scottcarpenter28@gmail.com"}
+]
+description = "A TUI for managing SSH connections."
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["ssh"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python"
+]
+
+[project.optional-dependencies]
+dev = [
+]
+
+[project.urls]
+Repository = "https://github.com/scottcarpenter28/SSHortcut"
+
+#[project.scripts]
+#spam-cli = "spam:main_cli"
+
+#[project.entry-points."spam.magical"]
+#tomatoes = "spam:main_tomatoes"
