@@ -1,0 +1,49 @@
+SSHOption {
+    layout: horizontal;
+    background: $boost;
+    height: 5;
+    margin: 1;
+    min-width: 50;
+    padding: 1;
+}
+
+NewSSHForm {
+    background: $boost;
+    height: 10;
+    margin: 1;
+    min-width: 50;
+    padding: 1;
+}
+
+#form-input {
+    height: 5;
+}
+
+SSHDisplay {
+    content-align: center middle;
+    text-opacity: 60%;
+    height: 3;
+}
+
+Button {
+    width: 32;
+}
+
+#start {
+    dock: left;
+}
+
+#user_server_div, #username_div{
+    width: 40%;
+}
+#user_port_div{
+    width: 20%;
+}
+
+#Add {
+    width: 100%;
+}
+
+Label {
+    padding-left: 1;
+}

@@ -2,3 +2,5 @@
 .idea
 venv
 /src/sshortcut.egg-info
+ssh_storage.json
+/expirements

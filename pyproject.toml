@@ -7,7 +7,7 @@ name = "sshortcut"
 version = "0.0.1"
 dependencies = [
     "textual ~= 0.80",
-    "sqlalchemy ~= 2.0",
+    "pydantic ~= 2.9",
 ]
 requires-python = ">=3.10"
 authors = [
@@ -27,6 +27,8 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = [
+    "black ~= 24.8",
+    "mypy ~=1.11"
 ]
 
 [project.urls]
