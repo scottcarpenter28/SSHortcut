@@ -25,9 +25,9 @@ class SSHDisplay(Static):
 
     def compose(self) -> ComposeResult:
         yield Horizontal(
-            Vertical(Label("Server:"), Label(self.server), id="user_server_input"),
-            Vertical(Label("Port:"), Label(self.port), id="user_port_input"),
-            Vertical(Label("Username:"), Label(self.user), id="username_input"),
+            Vertical(Label("Server:"), Label(self.server), id="user_server_div"),
+            Vertical(Label("Port:"), Label(self.port), id="user_port_div"),
+            Vertical(Label("Username:"), Label(self.user), id="username_div"),
         )
 
 

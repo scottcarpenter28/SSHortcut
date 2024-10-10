@@ -1,13 +1,20 @@
+import json
 from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.widgets import Button, Label, Input, Static
 from textual.containers import Horizontal, Vertical
+from textual.message import Message
 
 from sshortcut.objects.config_storage import ConfigStorage, SSHConfig
 
 
-class NewSSHForm(Static):
+class NewSshForm(Static):
+
+    class ConnectionAdded(Message):
+        """Message sent when a new SSH connection is added."""
+
+        pass
 
     def compose(self) -> ComposeResult:
         """Create child widgets of a stopwatch."""
@@ -50,7 +57,8 @@ class NewSSHForm(Static):
         storage_path = Path("./ssh_storage.json")
         if storage_path.exists():
             with open(storage_path, "r") as f:
-                current_config = ConfigStorage.model_validate_strings(f.read())
+                file_content = json.loads(f.read())
+                current_config = ConfigStorage(**file_content)
         else:
             current_config = ConfigStorage()
 
@@ -65,3 +73,4 @@ class NewSSHForm(Static):
         server_input.value = ""
         port_input.value = "22"
         user_input.value = ""
+        self.post_message(self.ConnectionAdded())
