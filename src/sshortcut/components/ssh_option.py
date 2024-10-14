@@ -1,11 +1,15 @@
+import json
+from pathlib import Path
+
 from textual.app import ComposeResult
 from textual.widgets import Button, Label, Static
 from textual.containers import Horizontal, Vertical
+from textual.message import Message
 
 import atexit
 import subprocess
 
-from sshortcut.objects.config_storage import SSHConfig
+from sshortcut.objects.config_storage import SSHConfig, ConfigStorage
 
 
 def establish_ssh_connection_on_exit(connection: SSHConfig):
@@ -31,7 +35,12 @@ class SSHDisplay(Static):
         )
 
 
-class SSHOption(Static):
+class SshOption(Static):
+
+    class ConnectionFileUpdated(Message):
+        """Message sent when a new SSH connection is added."""
+
+        pass
 
     def __init__(self, connection: SSHConfig):
         super().__init__()
@@ -41,6 +50,30 @@ class SSHOption(Static):
         """Create child widgets of a stopwatch."""
         yield Button("Start Connection", id="start", variant="success")
         yield SSHDisplay(connection=self.connection)
+        yield Button("Remove", id="remove", variant="error")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        atexit.register(establish_ssh_connection_on_exit, self.connection)
+        if event.button.id == "start":
+            atexit.register(establish_ssh_connection_on_exit, self.connection)
+        elif event.button.id == "remove":
+            storage_path = Path("./ssh_storage.json")
+            if storage_path.exists():
+                with open(storage_path, "r") as f:
+                    file_content = json.loads(f.read())
+                    current_config = ConfigStorage(**file_content)
+
+                match = None
+                for index, entry in enumerate(current_config.options):
+                    if (
+                        entry.server == self.connection.server
+                        and entry.port == self.connection.port
+                        and entry.username == self.connection.username
+                    ):
+                        match = index
+
+                if match is not None:
+                    del current_config.options[match]
+                    # exit(current_config)
+                with open("./ssh_storage.json", "w") as f:
+                    f.write(current_config.model_dump_json())
+                self.post_message(self.ConnectionFileUpdated())

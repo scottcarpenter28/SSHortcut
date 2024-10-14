@@ -1,11 +1,12 @@
 import json
 from pathlib import Path
+from typing import Union
 
 from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer
 from textual.widgets import Footer, Header
 
-from components.ssh_option import SSHOption
+from components.ssh_option import SshOption
 from components.form import NewSshForm
 from sshortcut.objects.config_storage import ConfigStorage
 
@@ -29,7 +30,7 @@ class SSHortcut(App):
                 config_values = ConfigStorage(**data)
 
             for option in config_values.options:
-                ssh_options.append(SSHOption(connection=option))
+                ssh_options.append(SshOption(connection=option))
 
         yield ScrollableContainer(NewSshForm(), *ssh_options, id="ssh_options")
 
@@ -40,9 +41,16 @@ class SSHortcut(App):
         # Reload or refresh the relevant components
         self.refresh_connections()
 
+    async def on_ssh_option_connection_file_updated(
+        self, message: SshOption.ConnectionFileUpdated
+    ) -> None:
+        """Handle the custom event triggered when a connection is added."""
+        # Reload or refresh the relevant components
+        self.refresh_connections()
+
     def refresh_connections(self):
         component = self.query_one("#ssh_options")
-        ssh_options = self.query("SSHOption")
+        ssh_options = self.query("SshOption")
         if ssh_options:
             ssh_options.remove()
 
@@ -53,7 +61,7 @@ class SSHortcut(App):
                 config_values = ConfigStorage(**data)
 
             for option in config_values.options:
-                component.mount(SSHOption(connection=option))
+                component.mount(SshOption(connection=option))
 
     def action_toggle_dark(self) -> None:
         """

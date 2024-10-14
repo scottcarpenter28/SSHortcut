@@ -1,4 +1,4 @@
-SSHOption {
+SshOption {
     layout: horizontal;
     background: $boost;
     height: 5;
@@ -31,6 +31,9 @@ Button {
 
 #start {
     dock: left;
+}
+#remove{
+    dock:right;
 }
 
 #user_server_div, #username_div{
