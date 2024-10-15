@@ -1,6 +1,3 @@
-import json
-from pathlib import Path
-
 from textual.app import ComposeResult
 from textual.widgets import Button, Label, Static
 from textual.containers import Horizontal, Vertical
@@ -9,7 +6,9 @@ from textual.message import Message
 import atexit
 import subprocess
 
-from sshortcut.objects.config_storage import SSHConfig, ConfigStorage
+from sshortcut.models.database_connection import DBConnection
+from sshortcut.objects.config_storage import SSHConfig
+from sshortcut.utils.config import load_or_create_config, Config
 
 
 def establish_ssh_connection_on_exit(connection: SSHConfig):
@@ -45,6 +44,10 @@ class SshOption(Static):
     def __init__(self, connection: SSHConfig):
         super().__init__()
         self.connection = connection
+        self.config_file: Config = load_or_create_config()
+        self.db_conn = DBConnection(
+            self.config_file.database.connection, self.config_file.database.echo
+        )
 
     def compose(self) -> ComposeResult:
         """Create child widgets of a stopwatch."""
@@ -56,24 +59,5 @@ class SshOption(Static):
         if event.button.id == "start":
             atexit.register(establish_ssh_connection_on_exit, self.connection)
         elif event.button.id == "remove":
-            storage_path = Path("./ssh_storage.json")
-            if storage_path.exists():
-                with open(storage_path, "r") as f:
-                    file_content = json.loads(f.read())
-                    current_config = ConfigStorage(**file_content)
-
-                match = None
-                for index, entry in enumerate(current_config.options):
-                    if (
-                        entry.server == self.connection.server
-                        and entry.port == self.connection.port
-                        and entry.username == self.connection.username
-                    ):
-                        match = index
-
-                if match is not None:
-                    del current_config.options[match]
-                    # exit(current_config)
-                with open("./ssh_storage.json", "w") as f:
-                    f.write(current_config.model_dump_json())
-                self.post_message(self.ConnectionFileUpdated())
+            self.db_conn.delete_ssh_connection(self.connection.id)
+            self.post_message(self.ConnectionFileUpdated())

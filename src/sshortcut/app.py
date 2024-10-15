@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from typing import Union
 
 from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer
@@ -8,7 +7,9 @@ from textual.widgets import Footer, Header
 
 from components.ssh_option import SshOption
 from components.form import NewSshForm
-from sshortcut.objects.config_storage import ConfigStorage
+from sshortcut.models.database_connection import DBConnection
+from sshortcut.objects.config_storage import ConfigStorage, SSHConfig
+from sshortcut.utils.config import load_or_create_config, Config
 
 
 class SSHortcut(App):
@@ -17,20 +18,30 @@ class SSHortcut(App):
         ("d", "toggle_dark", "Toggle dark mode"),
     ]
 
+    def __init__(self):
+        super().__init__()
+        self.config_file: Config = load_or_create_config()
+        self.db_conn = DBConnection(
+            self.config_file.database.connection, self.config_file.database.echo
+        )
+
     def compose(self) -> ComposeResult:
         """Called to add widgets to the app."""
         yield Header()
         yield Footer()
 
-        storage_path = Path("./ssh_storage.json")
         ssh_options = []
-        if storage_path.exists():
-            with storage_path.open("r") as f:
-                data = json.loads(f.read())
-                config_values = ConfigStorage(**data)
-
-            for option in config_values.options:
-                ssh_options.append(SshOption(connection=option))
+        for option in self.db_conn.get_all_ssh_connections():
+            ssh_options.append(
+                SshOption(
+                    connection=SSHConfig(
+                        id=option.id,
+                        server=option.server,
+                        port=option.port,
+                        username=option.username,
+                    )
+                )
+            )
 
         yield ScrollableContainer(NewSshForm(), *ssh_options, id="ssh_options")
 
@@ -54,14 +65,17 @@ class SSHortcut(App):
         if ssh_options:
             ssh_options.remove()
 
-        storage_path = Path("./ssh_storage.json")
-        if storage_path.exists():
-            with storage_path.open("r") as f:
-                data = json.loads(f.read())
-                config_values = ConfigStorage(**data)
-
-            for option in config_values.options:
-                component.mount(SshOption(connection=option))
+        for option in self.db_conn.get_all_ssh_connections():
+            component.mount(
+                SshOption(
+                    connection=SSHConfig(
+                        id=option.id,
+                        server=option.server,
+                        port=option.port,
+                        username=option.username,
+                    )
+                )
+            )
 
     def action_toggle_dark(self) -> None:
         """

@@ -6,7 +6,8 @@ from textual.widgets import Button, Label, Input, Static
 from textual.containers import Horizontal, Vertical
 from textual.message import Message
 
-from sshortcut.objects.config_storage import ConfigStorage, SSHConfig
+from sshortcut.models.database_connection import DBConnection
+from sshortcut.utils.config import Config, load_or_create_config
 
 
 class NewSshForm(Static):
@@ -15,6 +16,13 @@ class NewSshForm(Static):
         """Message sent when a new SSH connection is added."""
 
         pass
+
+    def __init__(self):
+        super().__init__()
+        self.config_file: Config = load_or_create_config()
+        self.db_conn = DBConnection(
+            self.config_file.database.connection, self.config_file.database.echo
+        )
 
     def compose(self) -> ComposeResult:
         """Create child widgets of a stopwatch."""
@@ -54,21 +62,9 @@ class NewSshForm(Static):
             except ValueError:
                 pass
 
-        storage_path = Path("./ssh_storage.json")
-        if storage_path.exists():
-            with open(storage_path, "r") as f:
-                file_content = json.loads(f.read())
-                current_config = ConfigStorage(**file_content)
-        else:
-            current_config = ConfigStorage()
-
-        with open("./ssh_storage.json", "w") as f:
-            current_config.options.append(
-                SSHConfig(
-                    server=server_input.value, port=port, username=user_input.value
-                )
-            )
-            f.write(current_config.model_dump_json())
+        self.db_conn.add_ssh_connection(
+            server=server_input.value, port=port, user=user_input.value
+        )
 
         server_input.value = ""
         port_input.value = "22"

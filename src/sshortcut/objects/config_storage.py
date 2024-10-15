@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class SSHConfig(BaseModel):
+    id: int
     server: str
     port: int
     username: str
